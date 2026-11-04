@@ -152,6 +152,7 @@ export interface Product {
 
 export interface Shop {
   id: string;
+  retailerCode?: string;
   name: string;
   ownerName: string;
   phone: string;

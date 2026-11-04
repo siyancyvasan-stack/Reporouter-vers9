@@ -399,7 +399,7 @@ shopRouter.post('/:id/images', authorize(Role.ADMIN, Role.MANAGER, Role.AGENT), 
         return res.status(422).json({ error: { code: 'IMAGE_REQUIRED', message: 'Choose an image to upload' } });
     const shopId = String(req.params.id);
     
-    let shopQuery = 'SELECT id FROM Shop WHERE id = ? AND tenantId = ?';
+    let shopQuery = 'SELECT id, retailerCode FROM Shop WHERE id = ? AND tenantId = ?';
     const params = [shopId, req.auth.tenantId];
     if (req.auth.role === Role.AGENT) {
         shopQuery += ' AND assignedSalespersonId = ?';
@@ -407,6 +407,17 @@ shopRouter.post('/:id/images', authorize(Role.ADMIN, Role.MANAGER, Role.AGENT), 
     }
     const [shops] = await db.query(shopQuery, params);
     if (!shops[0]) return res.status(404).json({ error: { code: 'SHOP_NOT_FOUND' } });
+    let retailerCode = shops[0].retailerCode;
+    // Older shops may predate retailer IDs. Assign the same ten-digit ID
+    // automatically when their first image is uploaded.
+    if (!retailerCode) {
+        const [latest] = await db.query(
+            'SELECT retailerCode FROM Shop WHERE tenantId = ? AND retailerCode REGEXP ? ORDER BY CAST(retailerCode AS UNSIGNED) DESC LIMIT 1',
+            [req.auth.tenantId, '^[0-9]+$'],
+        );
+        retailerCode = String(Number(latest[0]?.retailerCode || 0) + 1).padStart(10, '0').slice(-10);
+        await db.query('UPDATE Shop SET retailerCode = ? WHERE id = ? AND tenantId = ?', [retailerCode, shopId, req.auth.tenantId]);
+    }
     
     const [countRes] = await db.query('SELECT COUNT(*) as c FROM ShopImage WHERE shopId = ?', [shopId]);
     const imageCount = countRes[0].c;
@@ -450,7 +461,7 @@ shopRouter.post('/:id/images', authorize(Role.ADMIN, Role.MANAGER, Role.AGENT), 
         
         const [images] = await connection.query('SELECT * FROM ShopImage WHERE id = ?', [imageId]);
         await connection.commit();
-        return res.status(201).json(images[0]);
+        return res.status(201).json({ ...images[0], shopId, retailerCode });
     } catch (error) {
         await connection.rollback();
         await deletePermanentImage(stored.storageKey).catch(() => undefined);

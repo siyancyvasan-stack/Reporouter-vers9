@@ -209,6 +209,7 @@ export const updateProduct = async (id: string, input: Parameters<typeof createP
 
 const toShop = (item: any): Shop => ({
   id: item.id,
+  retailerCode: item.retailerCode ?? item.shopCode ?? undefined,
   name: item.name,
   ownerName: item.ownerName,
   phone: item.phone,
