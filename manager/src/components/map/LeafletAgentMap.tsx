@@ -248,6 +248,7 @@ export const LeafletAgentMap = ({ agents, selectedAgentId, onSelectAgent }: Leaf
     }
     markersRef.current.get(selected.id)?.openPopup();
 
+    const plannedStops = selected.routeCoordinates.filter(isValidPoint);
     const travelledPath = (selected.travelledPath?.length ? selected.travelledPath : selected.routeCoordinates)
       .filter(isValidPoint);
     // Keep the live GPS fix connected to the recorded route. This makes the
@@ -261,10 +262,10 @@ export const LeafletAgentMap = ({ agents, selectedAgentId, onSelectAgent }: Leaf
     if (routePath.length > 1) {
       travelledRouteRef.current = L.polyline(
         routePath.map((point) => [point.lat, point.lng]),
-        { color: '#7c3aed', opacity: .82, weight: 5 },
+        { color: '#111827', opacity: .9, weight: 5 },
       ).addTo(map);
     }
-    travelledPath.filter((point) => point.label).forEach((point, index) => {
+    plannedStops.filter((point) => point.label).forEach((point, index) => {
       const icon = L.divIcon({
         className: '',
         html: `<span class="tf-shop-marker ${point.visited ? 'is-visited' : ''}"><b style="transform:rotate(45deg)">${index + 1}</b></span>`,

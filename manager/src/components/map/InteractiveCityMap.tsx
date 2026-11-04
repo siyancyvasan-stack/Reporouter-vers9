@@ -396,13 +396,15 @@ export const InteractiveCityMap: React.FC<InteractiveCityMapProps> = ({
     }
     map.panTo(selectedAgent.coordinates);
     if ((map.getZoom() ?? 0) < 15) map.setZoom(15);
+    const plannedStops = selectedAgent.routeCoordinates
+      .filter((point) => Number.isFinite(point.lat) && Number.isFinite(point.lng));
     const travelledPath = (selectedAgent.travelledPath?.length ? selectedAgent.travelledPath : selectedAgent.routeCoordinates)
       .filter((point) => Number.isFinite(point.lat) && Number.isFinite(point.lng));
     if (travelledPath.length > 1) {
       travelledPolylineRef.current = new google.maps.Polyline({
         map,
         path: travelledPath,
-        strokeColor: '#7c3aed',
+        strokeColor: '#111827',
         strokeOpacity: 0.82,
         strokeWeight: 5,
         zIndex: 20,
@@ -410,7 +412,7 @@ export const InteractiveCityMap: React.FC<InteractiveCityMapProps> = ({
     }
     void importLibrary('marker').then(({ AdvancedMarkerElement }) => {
       if (cancelled) return;
-      travelledPath.filter((point) => point.label).forEach((point, index) => {
+      plannedStops.filter((point) => point.label).forEach((point, index) => {
         const pin = document.createElement('span');
         pin.className = `tf-shop-marker ${point.visited ? 'is-visited' : ''}`;
         pin.textContent = String(index + 1);
