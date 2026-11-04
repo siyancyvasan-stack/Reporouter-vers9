@@ -3,6 +3,9 @@
   "private": true,
   "version": "9",
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "vite",
     "dev:vite": "vite --port=4000 --host=0.0.0.0 --strictPort",

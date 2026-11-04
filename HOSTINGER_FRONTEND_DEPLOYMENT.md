@@ -3,6 +3,14 @@
 This project does not require a Vercel project. Build the portals locally and
 upload the generated `dist` contents to Hostinger.
 
+The frontend build requires Node.js 20 or newer. This repository includes a
+`.nvmrc` file; use Node 20/22 before running `npm install` or `npm run build`.
+
+```bash
+nvm use 20
+node --version
+```
+
 ## Sales portal
 
 From the repository root:
