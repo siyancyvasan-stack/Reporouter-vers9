@@ -351,6 +351,6 @@ const mergeTelemetry = (
             });
 
 const isValidAgentCoordinate = (coordinates?: { lat?: number; lng?: number }) =>
-  Boolean(coordinates && isFiniteCoordinate(coordinates.lat) && isFiniteCoordinate(coordinates.lng) &&
+  Boolean(coordinates && toFiniteCoordinate(coordinates.lat) !== undefined && toFiniteCoordinate(coordinates.lng) !== undefined &&
     coordinates.lat >= -90 && coordinates.lat <= 90 && coordinates.lng >= -180 && coordinates.lng <= 180 &&
     !(coordinates.lat === 0 && coordinates.lng === 0));

@@ -176,7 +176,7 @@ export const resolveLoginEmail = (email, tenant) => email;
 
 export const refresh = async (token, context) => {
     const [storedTokens] = await db.query(
-        'SELECT r.*, u.tenantId, u.role, u.email, u.status as userStatus, u.id as userId FROM RefreshToken r JOIN User u ON r.userId = u.id WHERE r.tokenHash = ? LIMIT 1',
+        'SELECT r.*, u.tenantId, u.role, u.email, u.status as userStatus, u.id as userId, u.name, u.avatarUrl, u.employeeCode, u.phone, u.region FROM RefreshToken r JOIN User u ON r.userId = u.id WHERE r.tokenHash = ? LIMIT 1',
         [hashToken(token)]
     );
     const stored = storedTokens[0];

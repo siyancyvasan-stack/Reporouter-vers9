@@ -42,6 +42,45 @@ export const AgentLayout: React.FC<AgentLayoutProps> = ({
   const location = useLocation();
   const portalBase = location.pathname.startsWith('/sales/') ? '/sales' : '/agent';
   const [isCheckedIn, setIsCheckedIn] = useState(false);
+  const [batteryLevel, setBatteryLevel] = useState<number | null>(null);
+  const [batterySupported, setBatterySupported] = useState(true);
+
+  useEffect(() => {
+    let disposed = false;
+    let battery: (EventTarget & { level: number; charging: boolean }) | undefined;
+
+    const updateBattery = () => {
+      if (!disposed && battery) setBatteryLevel(Math.round(battery.level * 100));
+    };
+
+    const loadBattery = async () => {
+      const nav = navigator as Navigator & {
+        getBattery?: () => Promise<EventTarget & { level: number; charging: boolean }>;
+      };
+      if (!nav.getBattery) {
+        if (!disposed) setBatterySupported(false);
+        return;
+      }
+      try {
+        battery = await nav.getBattery();
+        updateBattery();
+        battery.addEventListener('levelchange', updateBattery);
+        return () => battery?.removeEventListener('levelchange', updateBattery);
+      } catch {
+        if (!disposed) setBatterySupported(false);
+      }
+    };
+
+    let cleanup: (() => void) | undefined;
+    void loadBattery().then((result) => {
+      if (disposed) result?.();
+      else cleanup = result;
+    });
+    return () => {
+      disposed = true;
+      cleanup?.();
+    };
+  }, []);
   useEffect(() => {
     const syncCheckIn = () =>
       setIsCheckedIn(localStorage.getItem('tf_agent_checked_in') === 'true');
@@ -147,8 +186,8 @@ export const AgentLayout: React.FC<AgentLayoutProps> = ({
 
           {/* Battery Indicator */}
           <div className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-400">
-            <Battery className="w-4 h-4 text-emerald-400" />
-            <span>82%</span>
+            <Battery className={`w-4 h-4 ${batteryLevel !== null ? 'text-emerald-400' : 'text-slate-500'}`} />
+            <span>{batterySupported && batteryLevel !== null ? `${batteryLevel}%` : 'Unavailable'}</span>
           </div>
 
           <ProfileAvatar
