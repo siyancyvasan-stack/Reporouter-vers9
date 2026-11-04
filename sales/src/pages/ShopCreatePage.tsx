@@ -74,6 +74,7 @@ export const ShopCreatePage: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [locating, setLocating] = useState(false);
   const [shopPhoto, setShopPhoto] = useState<File | undefined>();
+  const [generatedShopId, setGeneratedShopId] = useState("");
 
   const setField =
     (k: keyof ShopForm) =>
@@ -163,7 +164,7 @@ export const ShopCreatePage: React.FC = () => {
     setSaving(true);
     setErrors({});
     try {
-      const createdShop = await apiRequest<{ id: string }>("/api/v1/shops", {
+      const createdShop = await apiRequest<{ id: string; retailerCode?: string }>("/api/v1/shops", {
         method: "POST",
         body: JSON.stringify({
           name: form.name.trim(),
@@ -190,6 +191,7 @@ export const ShopCreatePage: React.FC = () => {
           paymentMethod: "CASH",
         }),
       });
+      setGeneratedShopId(createdShop.retailerCode ?? "");
 
       if (shopPhoto && createdShop?.id) {
         try {
@@ -208,7 +210,7 @@ export const ShopCreatePage: React.FC = () => {
 
       showToast(
         "Shop Registered",
-        `${form.name} was successfully registered.`,
+        `${form.name} was successfully registered${createdShop.retailerCode ? ` · Shop ID: ${createdShop.retailerCode}` : ""}.`,
         "success",
       );
       navigate("/sales/shops");
@@ -284,6 +286,16 @@ export const ShopCreatePage: React.FC = () => {
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Shop ID (10 digits)">
+                <input
+                  type="text"
+                  value={generatedShopId || "Generated after registration"}
+                  readOnly
+                  aria-label="Shop ID"
+                  className="input w-full bg-slate-800/60 text-cyan-300 font-mono tracking-widest"
+                />
+                <span className="mt-1 block text-[11px] text-slate-400">Generated automatically when the shop is registered.</span>
+              </Field>
               <Field label="Shop / Retailer Name" required error={errors.name}>
                 <input
                   type="text"
