@@ -59,6 +59,9 @@ const toFiniteCoordinate = (value: unknown): number | undefined => {
   return Number.isFinite(numeric) ? numeric : undefined;
 };
 
+const isFiniteCoordinate = (value: unknown): value is number =>
+  toFiniteCoordinate(value) !== undefined;
+
 const toMessages = (payload: unknown): TelemetryMessage[] => {
   if (Array.isArray(payload)) return payload as TelemetryMessage[];
   if (payload && typeof payload === 'object') {
